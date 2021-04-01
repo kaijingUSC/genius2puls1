@@ -1,5 +1,7 @@
 # genius2puls1
 
+Close price from 2020-7-20 to 2021-1-6
+
 1. Basic analysis and visualization
   stock_basic_visualization.py
   - Moving average chart
@@ -12,6 +14,7 @@
     kaggle_test1.py
   - LSTM
   - SVM
+    Evaluation: RSME
 3. News text crawler
 
     news_crawler.py
