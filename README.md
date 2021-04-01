@@ -21,6 +21,6 @@ Close price from 2020-7-20 to 2021-1-6
     Crawling company's news from financialpost website
 4. News data preparation and sentiment analysis
 
-    news_data_preparation_and_sentimenal_analysis.py
+    news_data_preparation_and_sentimen_analysis.py
 
 Next: modeling with sentiment analysis and lstm model optimization
