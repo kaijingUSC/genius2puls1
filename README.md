@@ -19,8 +19,8 @@ Close price from 2020-7-20 to 2021-1-6
 
     news_crawler.py
     Crawling company's news from financialpost website
-4. News data preparation and sentimental analysis
+4. News data preparation and sentiment analysis
 
     news_data_preparation_and_sentimenal_analysis.py
 
-Next: modeling with sentimental analysis and lstm model optimization
+Next: modeling with sentiment analysis and lstm model optimization
