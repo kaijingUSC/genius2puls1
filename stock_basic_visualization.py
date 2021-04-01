@@ -4,6 +4,7 @@
 Created on Mon Mar 20 12:02:28 2021
 @author: ZepeiZhao
 """
+
 import pandas as pd
 import datetime
 import pandas_datareader.data as web
@@ -13,7 +14,7 @@ from matplotlib import style
 import matplotlib as mpl
 
 
-### visulization including
+### visulization includes
 # 1. Moving average chart
 # 2. Rate of return chart
 # 3. Income distribution scatter chart
