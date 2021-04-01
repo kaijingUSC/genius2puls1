@@ -18,6 +18,6 @@
     Crawling company's news from financialpost website
 4. News data preparation and sentimental analysis
 
-    news_data_preparation_and_sentimenal_ana.py
+    news_data_preparation_and_sentimenal_analysis.py
 
 Next: modeling with sentimental analysis and lstm model optimization
