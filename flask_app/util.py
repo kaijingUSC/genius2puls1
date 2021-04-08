@@ -23,6 +23,7 @@ def search_stock(key):
         if(each.find(class_='date')):
             # print(each.find(class_='date').prettify())
             # print(each.find(class_='title').prettify())
-            news.append([each.find(class_='date').contents[0][3:], each.find(class_='title').contents[0]])
+            news.append({'time': each.find(class_='date').contents[0][3:], 'content': each.find(class_='title').contents[0]})
+            # news.append([each.find(class_='date').contents[0][3:], each.find(class_='title').contents[0]])
 
     return news

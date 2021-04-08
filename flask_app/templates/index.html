@@ -1,5 +1,4 @@
 
-{% import "bootstrap/wtf.html" as wtf %}
 
 {% extends "nav.html"%}
 
@@ -17,6 +16,16 @@
             <input type="submit" name="submit" value="Search">  <!-- 提交按钮 -->
         </form>
      </div>
+     <br>
+         {% if news|length > 0%}
+             <div>
+                 <p>Found {{ news|length}} news: </p>
+                 {% for each in news%}
+                     <li>{{ each.content }} - {{ each.time }}</li>
+                 {% endfor %}
+             </div>
+        {% endif%}
+
 </div>
 {% endblock %}
 
