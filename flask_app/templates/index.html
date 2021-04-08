@@ -1,0 +1,29 @@
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% extends "nav.html"%}
+
+{%block title %}Stock Market Prediction{% endblock %}
+ 
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Stock Prediction</h1>
+    </div>
+    <div>
+        <form method="post">  <!-- 指定提交方法为 POST -->
+            <label for="symbol">Enter symbol/name here:</label><br>
+            <input type="text" name="symbol" id="symbol"><br><br>  <!-- 文本输入框 -->
+            <input type="submit" name="submit" value="Search">  <!-- 提交按钮 -->
+        </form>
+     </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
