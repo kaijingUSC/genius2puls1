@@ -28,4 +28,8 @@ Close price from 2020-7-20 to 2021-1-6
 
     news_data_preparation_and_sentiment_analysis.py
 
-Next: modeling with sentiment analysis and lstm model optimization
+5. LSTM model
+
+    1. LSTM_model.py 
+
+    2. LSTM_model_with_news.py
