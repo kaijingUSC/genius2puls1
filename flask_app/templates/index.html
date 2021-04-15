@@ -10,21 +10,26 @@
         <h1>Stock Prediction</h1>
     </div>
     <div>
-        <form method="post">  <!-- 指定提交方法为 POST -->
+        <form method="post">  
             <label for="symbol">Enter symbol/name here:</label><br>
-            <input type="text" name="symbol" id="symbol"><br><br>  <!-- 文本输入框 -->
-            <input type="submit" name="submit" value="Search">  <!-- 提交按钮 -->
+            <input type="text" name="symbol" id="symbol"><br><br>  
+            <input type="submit" name="submit" value="Search">  
         </form>
-     </div>
-     <br>
-         {% if news|length > 0%}
-             <div>
-                 <p>Found {{ news|length}} news: </p>
-                 {% for each in news%}
-                     <li>{{ each.content }} - {{ each.time }}</li>
-                 {% endfor %}
-             </div>
-        {% endif%}
+    </div>
+    <br>
+
+    {% if img_url %}
+        <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
+    {% endif%}
+    
+    {% if news|length > 0%}
+        <div>
+            <p>Found {{ news|length}} news: </p>
+            {% for each in news%}
+                <li>{{ each.content }} - {{ each.time }}</li>
+            {% endfor %}
+        </div>
+    {% endif%}
 
 </div>
 {% endblock %}
