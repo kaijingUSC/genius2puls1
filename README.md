@@ -27,6 +27,10 @@ Close price from 2020-7-20 to 2021-1-6
 4. News data preparation and sentiment analysis
 
     news_data_preparation_and_sentiment_analysis.py
+    
+5. Merge stock price data with sentiment signals
+
+    data_merge.py
 
 5. LSTM model
 
