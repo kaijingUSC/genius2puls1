@@ -40,6 +40,9 @@ def other_analysis():
             pass
     return render_template('other_analysis.html')
 
+@app.route('/contact_us', methods=['GET', 'POST'])
+def contact_us():
+    return render_template('contact_us.html')
 
 @app.route('/user/<name>')
 def user_page(name):
