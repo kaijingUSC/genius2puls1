@@ -29,6 +29,15 @@ def index():
 
 @app.route('/other_analysis', methods=['GET', 'POST'])
 def other_analysis():
+    if request.method == "POST":
+        if request.form['link'] == 'Moving Average':
+            pass
+        elif request.form['link'] == 'Rate of Return':
+            pass
+        elif request.form['link'] == 'Correlation':
+            pass
+        elif request.form['link'] == 'Risk and Return':
+            pass
     return render_template('other_analysis.html')
 
 
