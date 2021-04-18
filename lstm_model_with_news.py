@@ -29,9 +29,14 @@ X = X.astype('float32')
 X = np.reshape(X, (-1, 1))
 
 # training and testing settings (size)
-percent_of_training = 0.7
-train_size = int(len(y) * percent_of_training)
+
+train_size = int(len(y)-5)
 test_size = len(y) - train_size
+#train_y, test_y = y[0:train_size, :], y[train_size:len(y), :]
+
+# percent_of_training = 0.7
+# train_size = int(len(y) * percent_of_training)
+# test_size = len(y) - train_size
 #
 train_y, test_y = y[0:train_size,:], y[train_size:len(y),:]
 train_x, test_x = X[0:train_size,:], X[train_size:len(X),:]
@@ -46,7 +51,7 @@ def create_dataset(dataset, look_back=1):
         Y.append(dataset[i + look_back, 0])
     return np.array(X), np.array(Y)
 
-look_back = 7
+look_back = 1
 
 
 # features of the original time serie (y)
@@ -75,7 +80,7 @@ model.add(Dropout(0.20))
 model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
-history = model.fit(X_train_all_features,y_train, epochs=10, batch_size=1, validation_data=(X_test_all_features, y_test),
+history = model.fit(X_train_all_features,y_train, epochs=300, batch_size=25, validation_data=(X_test_all_features, y_test),
                     callbacks=[EarlyStopping(monitor='val_loss', patience=10)], verbose=0, shuffle=False)
 #
 # history = model.fit(X_train_all_features,y_train, epochs=300, batch_size=25, validation_data=(X_test_all_features, y_test),
@@ -107,8 +112,8 @@ plt.show();
 time_y_train = pd.DataFrame(data = train_y, index = result[0:train_size].index,columns= [""])
 time_y_test  = pd.DataFrame(data = test_y, index = result[train_size:].index,columns= [""])
 
-time_y_train_prediction = pd.DataFrame(data = train_predict, index = time_y_train[8:].index,columns= [""])
-time_y_test_prediction  = pd.DataFrame(data = test_predict, index = time_y_test[8:].index,columns= [""])
+time_y_train_prediction = pd.DataFrame(data = train_predict, index = time_y_train[2:].index,columns= [""])
+time_y_test_prediction  = pd.DataFrame(data = test_predict, index = time_y_test[2:].index,columns= [""])
 
 
 plt.style.use('seaborn-dark')

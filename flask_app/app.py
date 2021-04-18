@@ -5,7 +5,7 @@
 from flask import Flask, render_template
 from flask import url_for, escape, request, redirect, flash
 from flask_bootstrap import Bootstrap
-from util import search_stock, stock_predict_plt
+from flask_app.util import search_stock, stock_predict_plt
 
 
 app = Flask(__name__)

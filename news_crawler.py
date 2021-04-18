@@ -64,7 +64,7 @@ def extract_date_and_text(ur):
 
 # print(extract_link_of_news('microsoft',1))
 
-n_of_pages = 1
+n_of_pages = 330
 df = pd.concat([extract_link_of_news("microsoft",i) for i in range(1,n_of_pages+1)],ignore_index = True)
 
 
