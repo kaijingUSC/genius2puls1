@@ -16,6 +16,7 @@ import urllib
 import sys
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from datetime import datetime, timedelta
+
 pd.set_option('display.float_format', lambda x: '%.4f' % x)
 sns.set_context("paper", font_scale=1.3)
 sns.set_style('white')

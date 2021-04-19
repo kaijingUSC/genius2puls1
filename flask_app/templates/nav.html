@@ -1,9 +1,23 @@
 {%extends "bootstrap/base.html"%}
 
 {%block navbar %}
-<div class="navbar navbar-inverse" role="navigation">
+    <head>
+    <style>
+        h1{font-size: 50px;
+        color: #4374e0;
+        text-align: left;
+        }
+
+        .navbar navbar-invers{
+            height: 300px;
+        }
+
+    </style>
+    </head>
+    <body>
+    <div class="navbar navbar-inverse" role="navigation">
     <div class="container ">
-        <div class="">
+        <div class="header">
             <h1>Stock Market Prediction</h1>
         </div>
         <div class="navbar-header">
@@ -24,6 +38,8 @@
         </div>
     </div>
 </div>
-{% endblock %}
+
+    </body>{% endblock %}
+
 
 

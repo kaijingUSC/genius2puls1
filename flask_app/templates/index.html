@@ -3,15 +3,47 @@
 {%block title %}Stock Market Prediction{% endblock %}
  
 {% block content %}
+    <head>
+    <style>
+       label{
+           font-size: 25px;
+           margin-bottom: 30px;
+       }
+        input_area{
+            width:200px;
+            height: 30px;
+            margin-bottom: 30px;
+        }
+        submit{
+             width:150px;
+            height: 30px;
+            font-size: 25px;
+        }
+        .submit:hover{
+            background-color: #4374e0;
+            color:white;
+        }
+        {#img{#}
+        {##}
+        {#    margin-left: 40%;#}
+        {#    display: inline;#}
+        {#}#}
+        {#container{#}
+        {#    display: inline;#}
+        {#}#}
+
+    </style>
+    </head>
+<body>
 <div class="container">
     <div class="page-header">
         <h1>Stock Prediction</h1>
     </div>
     <div>
-        <form method="post">  
-            <label for="symbol">Enter symbol/name here:</label><br>
-            <input type="text" name="symbol" id="symbol"><br><br>  
-            <input type="submit" name="submit" value="Search">  
+        <form method="post">
+            <label class = "input_area" for="symbol">Enter symbol/name here:</label><br>
+            <input type="text" name="symbol" id="symbol"><br><br>
+            <input class="submit" type="submit" name="submit" value="Search">
         </form>
     </div>
     <br>
@@ -30,7 +62,7 @@
     {% if img_url %}
         <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
     {% endif%}
-    
+
     {% if news|length > 0%}
         <div>
             <p>Found news: </p>
@@ -41,5 +73,9 @@
     {% endif %}
 
 </div>
+{#<img class = "img"> #}
+{#<img src="https://image.jiqizhixin.com/uploads/editor/fd803863-50aa-4a18-b696-c9f557bdc09d/1546595243605.png"  width="400" height="300">#}
+</body>
+
 {% endblock %}
 
