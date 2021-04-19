@@ -5,18 +5,20 @@
 from flask import Flask, render_template
 from flask import url_for, escape, request, redirect, flash
 from flask_bootstrap import Bootstrap
-from util import search_stock, stock_predict_plt
+from util import search_stock, stock_predict_plt, moving_average, Rate_of_Return, Correlation, Risk_and_Return
 
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 
+key = True
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     news=[]
     img_url=''
     if request.method == 'POST':
+        global key
         key = request.form.get('symbol')
         # print(key)
         if not key:
@@ -29,16 +31,29 @@ def index():
 
 @app.route('/other_analysis', methods=['GET', 'POST'])
 def other_analysis():
+    img_url=''
     if request.method == "POST":
         if request.form['link'] == 'Moving Average':
-            pass
+            if not key:
+                flash('Choose one')
+                return redirect(url_for('other_analysis'))
+            img_url = moving_average(key)
         elif request.form['link'] == 'Rate of Return':
-            pass
+            if not key:
+                flash('Choose one')
+                return redirect(url_for('other_analysis'))
+            img_url = Rate_of_Return(key)
         elif request.form['link'] == 'Correlation':
-            pass
+            if not key:
+                flash('Choose one')
+                return redirect(url_for('other_analysis'))
+            img_url = Correlation(key)
         elif request.form['link'] == 'Risk and Return':
-            pass
-    return render_template('other_analysis.html')
+            if not key:
+                flash('Choose one')
+                return redirect(url_for('other_analysis'))
+            img_url = Risk_and_Return(key)
+    return render_template('other_analysis.html', img_url=img_url)
 
 @app.route('/contact_us', methods=['GET', 'POST'])
 def contact_us():

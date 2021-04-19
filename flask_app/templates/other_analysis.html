@@ -20,6 +20,10 @@
     </div>
     <br>
 
+    {% if img_url %}
+        <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
+    {% endif%}
+
 </div>
 
 {% endblock %}

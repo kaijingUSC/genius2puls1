@@ -16,6 +16,9 @@ from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
+import matplotlib as mpl
+from matplotlib import style
+import pandas_datareader.data as web
 
 matplotlib.use('Agg')
 plt.style.use("fivethirtyeight")
@@ -97,5 +100,104 @@ def stock_predict_plt(key):
 
     return plot_url
 
-def moving_average(keys):
+def get_stock(key):
+    end = datetime.now()
+    start = datetime(end.year - 2, end.month, end.day)  
+    df = DataReader(key, data_source='yahoo', start=start, end=end)
+    # close_px = df['Adj Close']
+    return df
+
+def moving_average(key):
+    df = get_stock(key)
+    close_px = df['Adj Close']
+    mavg = close_px.rolling(window=10).mean()
+    mpl.rc('figure', figsize=(8, 7))
+    mpl.__version__
+    style.use('seaborn-poster')
+
+    img = io.BytesIO()
+    plt.figure()
+    close_px.plot(label=str(key))
+    mavg.plot(label='mavg')
+    plt.legend()
+    plt.show()
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+    return plot_url
+
+def Rate_of_Return(key):
+    df = get_stock(key)
+    close_px = df['Adj Close']
+
+    img = io.BytesIO()
+    plt.figure()
+    close_px.plot(label=str(key))
+    rets = close_px / close_px.shift(1) - 1
+    rets.plot(label='return')
+    plt.show()
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+    return plot_url
+
+def Correlation(key):
+    df = get_stock(key)
+    # close_px = df['Adj Close']
+    end = datetime.now()
+    start = datetime(end.year - 2, end.month, end.day)  
+
+    ### 3. Income distribution scatter chart
+    dfcomp = web.DataReader(['AAPL', 'GOOG', 'IBM', 'MSFT'],'yahoo',start=start,end=end)['Adj Close']
+    retscomp = dfcomp.pct_change()
+
+    corr = retscomp.corr()
+
+    img = io.BytesIO()
+    plt.figure()
+    plt.scatter(retscomp.GOOG, retscomp.AAPL)
+    plt.xlabel('Returns GOOG')
+    plt.ylabel('Returns AAPL')
+    plt.show()
+
+    ### 4. Correlation heat map
+    plt.imshow(corr, cmap='hot', interpolation='none')
+    plt.colorbar()
+
+    plt.xticks(range(len(corr)), corr.columns)
+    plt.yticks(range(len(corr)), corr.columns)
+    plt.show()
+
+    plt.imshow(corr, cmap='hot', interpolation='none')
+    plt.colorbar()
+
+    plt.xticks(range(len(corr)), corr.columns)
+    plt.yticks(range(len(corr)), corr.columns)
+    plt.show()
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+    return plot_url
+
+def Risk_and_Return(key):
+    df = get_stock(key)
+    # close_px = df['Adj Close']
+    
+    end = datetime.now()
+    start = datetime(end.year - 2, end.month, end.day) 
+    dfcomp = web.DataReader(['AAPL', 'GOOG', 'IBM', 'MSFT'],'yahoo',start=start,end=end)['Adj Close']
+    retscomp = dfcomp.pct_change()
+
+    img = io.BytesIO()
+    plt.figure()
+    plt.scatter(retscomp.mean(), retscomp.std())
+    plt.xlabel('Expected returns')
+
+    plt.ylabel('Risk')
+
+    for label, x, y in zip(retscomp.columns, retscomp.mean(), retscomp.std()):
+        plt.annotate(label,xy = (x, y), xytext = (20, -20),textcoords = 'offset points', ha = 'right', va = 'bottom',
+                    bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+                    arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+    plt.show()
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+
     return plot_url
