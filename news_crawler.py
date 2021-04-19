@@ -17,7 +17,7 @@ def get_internal_links(ur):
 def extract_link_of_news(k_word, n_of_page):
     news_df = pd.DataFrame()
 
-    link = "https://business.financialpost.com/search/?search_text=" + k_word + "&search_text="+k_word+"&date_range=-365d&sort=score&from="+str(n_of_page*10)
+    link = "https://financialpost.com/search/?search_text=" + k_word + "&search_text="+k_word+"&date_range=-365d&sort=score&from="+str(n_of_page*10)
 
     print(link)
     print(get_internal_links(link))
@@ -84,8 +84,8 @@ df["internals_dates"],df["internals_text"] = a(df["internal_urls"])
 df.loc[df["internals_text"] == "NO TEXT"]
 df.loc[df["internals_text"] == ""]
 
-df.to_pickle("microsoft_news_text.pkl")
+df.to_pickle("data/microsoft_news_text.pkl")
 
 
-df3 = pd.read_pickle("/Users/pz/Desktop/560/560-proj/microsoft_news_text.pkl")
+df3 = pd.read_pickle("data/microsoft_news_text.pkl")
 print(df3.head())

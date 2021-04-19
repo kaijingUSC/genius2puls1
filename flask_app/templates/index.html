@@ -15,6 +15,17 @@
         </form>
     </div>
     <br>
+    {% if company != '' %}
+        <h1>{{company}} - {{symbol}}</h1>
+    {% endif %}
+
+    {% if prediction|length > 0%}
+        {% for each in prediction %}
+            <div>
+                <span>Next {{loop.index}} day prediction: {{each}} </span>
+            </div>
+        {% endfor %}
+    {% endif %}
 
     {% if img_url %}
         <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
@@ -22,12 +33,12 @@
     
     {% if news|length > 0%}
         <div>
-            <p>Found {{ news|length}} news: </p>
+            <p>Found news: </p>
             {% for each in news%}
-                <li>{{ each.content }} - {{ each.time }}</li>
+                <li>{{ each.date }} - {{ each.text }}</li>
             {% endfor %}
         </div>
-    {% endif%}
+    {% endif %}
 
 </div>
 {% endblock %}

@@ -5,7 +5,7 @@
 from flask import Flask, render_template
 from flask import url_for, escape, request, redirect, flash
 from flask_bootstrap import Bootstrap
-from util import search_stock, stock_predict_plt, moving_average, Rate_of_Return, Correlation, Risk_and_Return
+from util import search_stock, stock_predict, moving_average, Rate_of_Return, Correlation, Risk_and_Return
 
 
 app = Flask(__name__)
@@ -17,6 +17,9 @@ key = True
 def index():
     news=[]
     img_url=''
+    prediction=[]
+    symbol=''
+    company=''
     if request.method == 'POST':
         global key
         key = request.form.get('symbol')
@@ -24,9 +27,9 @@ def index():
         if not key:
             flash('Enter a symbol to start')
             return redirect(url_for('index'))
-        news = search_stock(key)
-        img_url = stock_predict_plt(key)
-    return render_template('index.html', news=news, img_url=img_url)
+        symbol, company = search_stock(key)
+        img_url, news, prediction= stock_predict(symbol, company)
+    return render_template('index.html', symbol=symbol, company=company, news=news, img_url=img_url, prediction=prediction)
 
 
 @app.route('/other_analysis', methods=['GET', 'POST'])

@@ -5,7 +5,7 @@ import pandas as pd
 
 analyser = SentimentIntensityAnalyzer()
 ### data preparation
-df = pd.read_pickle("/Users/pz/Desktop/560/560-proj/microsoft_news_text.pkl")
+df = pd.read_pickle("data/microsoft_news_text.pkl")
 text = df['internals_text']
 
 def split_by_dot(x):
@@ -49,4 +49,4 @@ plt.grid()
 plt.show()
 
 
-df.to_pickle("sentiments_microsoft_news.pkl")
+df.to_pickle("data/sentiments_microsoft_news.pkl")

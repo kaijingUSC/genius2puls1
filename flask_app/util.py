@@ -12,36 +12,208 @@ from matplotlib.figure import Figure
 import matplotlib
 import seaborn as sns
 from pandas_datareader.data import DataReader
-from datetime import datetime
-from sklearn.preprocessing import MinMaxScaler
+import urllib
+import sys
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from datetime import datetime, timedelta
+pd.set_option('display.float_format', lambda x: '%.4f' % x)
+sns.set_context("paper", font_scale=1.3)
+sns.set_style('white')
+import warnings
+warnings.filterwarnings('ignore')
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
 import matplotlib as mpl
 from matplotlib import style
 import pandas_datareader.data as web
+from keras.layers import *
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from keras.callbacks import EarlyStopping
 
 matplotlib.use('Agg')
-plt.style.use("fivethirtyeight")
+# plt.style.use("fivethirtyeight")
 
+def create_dataset(dataset, look_back=1):
+    X, Y = [], []
+    for i in range(len(dataset)-look_back-3):
+        a = dataset[i:(i+look_back), 0]
+        X.append(a)
+        Y.append(dataset[i + look_back:(i+look_back+3), 0])
+    return np.array(X), np.array(Y)
+
+def extract_link_of_news(k_word, n_of_page):
+    news_df = pd.DataFrame()
+    link = "https://financialpost.com/search/?search_text=" + k_word + "&search_text="+k_word+"&date_range=-365d&sort=score&from="+str(n_of_page*10)
+    print(link)
+    info = get_info(link)
+    news_df["internals_text"] = info[0]
+    news_df["internals_dates"] = info[1]
+    news_df["internal_urls"] = info[2]
+    news_df["principal_url"] = link
+    news_df["n_of_page"] = n_of_page
+    return news_df
+
+def get_info(ur):
+    # news_df = pd.DataFrame()
+    info = BeautifulSoup(requests.get(ur, allow_redirects=True).content, 'html.parser').find_all("div", {
+        "class": "article-card__details"})
+    links = ["https://financialpost.com/"+a['href'] for each_link in info for a in each_link.find_all('a', {"class":"article-card__link"},href=True)]
+    text = [p.contents[0].strip() for each_link in info for p in each_link.find_all('p', {"class":"article-card__excerpt"})]
+    date = [span.contents[0].strip() for each_link in info for span in each_link.find_all('span', {"class":"article-card__time"})]
+    new_date = []
+
+    for each in date:
+        if 'ago' in each:
+            true_date = datetime.now() - timedelta(days=int(each[0]))
+            each = true_date.strftime("%B %d, %Y")
+        new_date.append(each)
+    
+    return [text, new_date, links]
+
+def split_by_dot(x):
+    return x.split(".")
+
+def sentimental_analysis_by_phrase(y):
+    analyser = SentimentIntensityAnalyzer()
+    y = list(map(lambda x: analyser.polarity_scores(x)["compound"], y))
+    y = np.array(y)
+    y = y[y != 0]
+    return (y)
+
+def sentimental_analysis(y):
+    analyser = SentimentIntensityAnalyzer()
+    return (analyser.polarity_scores(y)["compound"])
 
 def search_stock(key):
 
     news = []
-    
+    key = key.strip().replace(" ", "%20")
     start_page = 'https://investing.com/search/?q=' + key
     page = requests.get(start_page, headers={"User-Agent": "Mozilla/5.0"})
     soup = BeautifulSoup(page.text, 'html.parser')
     
-    search_link = soup.find(class_='searchSectionMain').find('a').get('href')
-    stock_link = 'https://investing.com' + search_link + '-news'
-    stock_page = requests.get(stock_link, headers={"User-Agent": "Mozilla/5.0"})
-    stock_soup = BeautifulSoup(stock_page.text, 'html.parser')
-    
-    news_article = stock_soup.find_all('article')
-    for each in news_article:
-        if(each.find(class_='date')):
-            news.append({'time': each.find(class_='date').contents[0][3:], 'content': each.find(class_='title').contents[0]})
-    return news
+    search_link = soup.find(class_='js-inner-all-results-quote-item')
+    symbol = search_link.find("span", class_="second").contents[0]
+    company = search_link.find("span", class_="third").contents[0]
+
+    return symbol, company
+
+def create_dataset(dataset, look_back=1):
+    X, Y = [], []
+    for i in range(len(dataset)-look_back-2):
+        a = dataset[i:(i+look_back), 0]
+        X.append(a)
+        Y.append(dataset[i + look_back:(i+look_back+3), 0])
+    return np.array(X), np.array(Y)
+
+def stock_predict(SYMBOL, COMPANY):
+    n_of_pages = 5
+    look_back = 4
+
+    # COMPANY = "FACEBOOK"
+    # SYMBOL = "FB"
+    df = pd.concat([extract_link_of_news(COMPANY,i) for i in range(1,n_of_pages+1)],ignore_index = True)
+    analyser = SentimentIntensityAnalyzer()
+
+    text = df['internals_text']
+    df["text_split"] = df["internals_text"].apply(split_by_dot)
+    df["time"] = pd.to_datetime(df["internals_dates"])
+    df = df.sort_values("time")
+    df = df.set_index("time")
+
+    text_2 = df["text_split"][0]
+    sen_res = sentimental_analysis_by_phrase(text_2)
+    df["sentimental_analysis_phrase"] = df["text_split"].apply(sentimental_analysis_by_phrase)
+    df["sentimental_analysis_average"] = df["sentimental_analysis_phrase"].apply(np.mean)
+
+    df["sentimental_analysis_score"] = df["internals_text"].apply(sentimental_analysis)
+
+    sentiment_df = df[['internals_dates', 'sentimental_analysis_score']].groupby('internals_dates').mean().reset_index()
+    sentiment_df["time"] = pd.to_datetime(sentiment_df["internals_dates"])
+    sentiment_df = sentiment_df.sort_values("time").reset_index(drop=True)
+
+    end = max(sentiment_df['time'])
+    start = min(sentiment_df['time'])
+    stock_df = DataReader(SYMBOL, data_source='yahoo', start=start, end=end)
+    stock_df = stock_df.filter(['Close'])
+    stock_df["t1"] = pd.to_datetime(stock_df.index)
+
+    result = pd.merge(stock_df, sentiment_df, how='left', on=None, left_on='t1', right_on='time', 
+                    left_index=False, right_index=False, sort=True, 
+                    suffixes=('_x', '_y'), copy=True, indicator=False)
+    result = result.fillna(0)
+    result.set_index(["t1"],inplace=True)
+
+    # original time series (Y)
+    y = result.Close.values
+    y = y.astype('float32')
+    y = np.reshape(y, (-1, 1))
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    y = scaler.fit_transform(y)
+
+    # extra information: features of the sentiment analysis
+    X = result.sentimental_analysis_score.values
+    X = X.astype('float32')
+    X = np.reshape(X, (-1, 1))
+
+    train_size = len(y) 
+    test_size = len(y) - train_size - 2 
+
+    train_y, test_y = y[0:train_size+2,:], y[train_size-look_back:,:]
+    train_x, test_x = X[0:train_size+2,:], X[train_size-look_back:,:]
+
+    X_train_features_1, y_train = create_dataset(train_y, look_back)
+    X_train_features_2, auxiliar_1 = create_dataset(train_x, look_back)
+
+    X_train_features_1 = np.reshape(X_train_features_1, (X_train_features_1.shape[0], 1, X_train_features_1.shape[1]))
+    X_train_features_2 = np.reshape(X_train_features_2, (X_train_features_2.shape[0], 1, X_train_features_2.shape[1]))
+    X_train_all_features = np.append(X_train_features_1,X_train_features_2,axis=1)
+
+    model = Sequential()
+    model.add(LSTM(32, activation='relu', input_shape=(X_train_all_features.shape[1], X_train_all_features.shape[2])))
+    model.add(RepeatVector(3))
+    model.add(TimeDistributed(Dense(3)))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+
+    history = model.fit(X_train_all_features,y_train, epochs=10, batch_size=1, 
+                        callbacks=[EarlyStopping(monitor='loss', patience=10)], verbose=0, shuffle=False)
+
+    p = np.array([[[i[0] for i in y[-4:]], [i[0] for i in X[-4:]]]])
+    test_predict = model.predict(p)
+    test_predict  = scaler.inverse_transform(np.array([x[0] for x in test_predict]))[0] 
+
+    img = io.BytesIO()
+
+    plt.style.use('seaborn-dark')
+    plt.figure(figsize=(16,8))
+    plt.xlabel('Date', fontsize=18)
+    plt.ylabel('Close Price USD ($)', fontsize=18)
+
+    plt_predict = pd.DataFrame(data=test_predict, index=[result.index[-1] + timedelta(days=1), result.index[-1] + timedelta(days=2), result.index[-1] + timedelta(days=3)])
+    plt_historical = pd.DataFrame(data=result['Close'], index=result.index)
+    plt.plot(plt_historical[-30:], label="History", marker=".")
+    plt.plot(plt_predict, label="Predict", marker=".")
+    plt.annotate("{:.2f}".format(plt_predict[0][0]), (plt_predict.index[0],plt_predict[0][0]), ha='right')
+    plt.annotate("{:.2f}".format(plt_predict[0][1]), (plt_predict.index[1],plt_predict[0][1]), ha='center')
+    plt.annotate("{:.2f}".format(plt_predict[0][2]), (plt_predict.index[2],plt_predict[0][2]), ha='left')
+    plt.legend(['History', 'Predictions'], loc='lower right')
+    plt.title("LSTM fit of Stock Market Prices Including Sentiment Signal",size = 20)
+    plt.tight_layout()
+    sns.despine(top=True)
+    plt.grid()
+
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+
+    news_return = []
+    a = df[["internals_text", "sentimental_analysis_score"]].drop_duplicates()
+    for idx, row in a[-10:].iterrows():
+        line = {"text": row["internals_text"], "date": datetime.date(idx), "score": row["sentimental_analysis_score"]}
+        news_return.insert(0, line)
+
+    return plot_url, news_return, list(test_predict)
 
 
 def stock_predict_plt(key):
