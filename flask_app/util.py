@@ -301,11 +301,11 @@ def moving_average(key):
 def Rate_of_Return(key):
     df = get_stock(key)
     close_px = df['Adj Close']
+    rets = close_px / close_px.shift(1) - 1
 
     img = io.BytesIO()
     plt.figure()
-    close_px.plot(label=str(key))
-    rets = close_px / close_px.shift(1) - 1
+    # close_px.plot(label=str(key))
     rets.plot(label='return')
     plt.show()
     plt.savefig(img, format='png')
@@ -325,20 +325,8 @@ def Correlation(key):
     corr = retscomp.corr()
 
     img = io.BytesIO()
-    plt.figure()
-    plt.scatter(retscomp.GOOG, retscomp.AAPL)
-    plt.xlabel('Returns GOOG')
-    plt.ylabel('Returns AAPL')
-    plt.show()
 
     ### 4. Correlation heat map
-    plt.imshow(corr, cmap='hot', interpolation='none')
-    plt.colorbar()
-
-    plt.xticks(range(len(corr)), corr.columns)
-    plt.yticks(range(len(corr)), corr.columns)
-    plt.show()
-
     plt.imshow(corr, cmap='hot', interpolation='none')
     plt.colorbar()
 
