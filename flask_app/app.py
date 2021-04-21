@@ -5,30 +5,60 @@
 from flask import Flask, render_template
 from flask import url_for, escape, request, redirect, flash
 from flask_bootstrap import Bootstrap
-from util import search_stock, stock_predict, moving_average, Rate_of_Return, Correlation, Risk_and_Return
+from util import search_stock, stock_predict, moving_average, Rate_of_Return, Correlation, Risk_and_Return, get_plt
 
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 
 key = True
+predict_df = []
+historical_df = []
+news = []
+prediction = []
+symbol = ''
+company = ''
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    news=[]
-    img_url=''
-    prediction=[]
-    symbol=''
-    company=''
+    # news=[]
+    img_url=False
+    # prediction=[]
+    # symbol=''
+    # company=''
+    timeRange = 30
     if request.method == 'POST':
-        global key
-        key = request.form.get('symbol')
+        # global key
+        # key = request.form.get('symbol')
         # print(key)
-        if not key:
-            flash('Enter a symbol to start')
-            return redirect(url_for('index'))
-        symbol, company = search_stock(key)
-        img_url, news, prediction= stock_predict(symbol, company)
+        # if not key:
+        #     flash('Enter a symbol to start')
+        #     return redirect(url_for('index'))
+        if request.form.get('symbol'):
+            global key 
+            global predict_df
+            global historical_df
+            global news
+            global prediction
+            global symbol
+            global company
+
+            key = request.form.get('symbol')
+            print(key)
+            symbol, company = search_stock(key)
+            predict_df, historical_df, news, prediction= stock_predict(symbol, company)
+        
+        elif request.form['range'] :
+            print(request.form['range'])
+            if request.form['range'] == "Three Months":
+                timeRange = 30
+            elif request.form['range'] == "Half Year":
+                timeRange = 180
+            elif request.form['range'] == "One Year":
+                timeRange = len(historical_df)
+    # print(predict_df)
+    if len(predict_df) > 0:
+        img_url = get_plt(predict_df, historical_df, timeRange)
     return render_template('index.html', symbol=symbol, company=company, news=news, img_url=img_url, prediction=prediction)
 
 

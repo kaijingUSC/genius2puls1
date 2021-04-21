@@ -60,6 +60,11 @@
     {% endif %}
 
     {% if img_url %}
+        <form method="post">
+            <input type="submit" name="range" value="Three Months">
+            <input type="submit" name="range" value="Half Year">
+            <input type="submit" name="range" value="One Year">
+        </form>
         <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
     {% endif%}
 
@@ -67,7 +72,7 @@
         <div>
             <p>Found news: </p>
             {% for each in news%}
-                <li>{{ each.date }} - {{ each.text }}</li>
+                <li>{{ each.date }} - <a href="{{each.link}}">{{ each.text }}</a></li>
             {% endfor %}
         </div>
     {% endif %}

@@ -16,7 +16,6 @@ import urllib
 import sys
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from datetime import datetime, timedelta
-
 pd.set_option('display.float_format', lambda x: '%.4f' % x)
 sns.set_context("paper", font_scale=1.3)
 sns.set_style('white')
@@ -46,6 +45,7 @@ def create_dataset(dataset, look_back=1):
 
 def extract_link_of_news(k_word, n_of_page):
     news_df = pd.DataFrame()
+    k_word = k_word.strip().replace(" ", "%20")
     link = "https://financialpost.com/search/?search_text=" + k_word + "&search_text="+k_word+"&date_range=-365d&sort=score&from="+str(n_of_page*10)
     print(link)
     info = get_info(link)
@@ -67,7 +67,10 @@ def get_info(ur):
 
     for each in date:
         if 'ago' in each:
-            true_date = datetime.now() - timedelta(days=int(each[0]))
+            if 'hour' in each:
+                true_date = datetime.now() - timedelta(hours=int(each[0]))
+            else:
+                true_date = datetime.now() - timedelta(days=int(each[0]))
             each = true_date.strftime("%B %d, %Y")
         new_date.append(each)
     
@@ -109,9 +112,28 @@ def create_dataset(dataset, look_back=1):
         Y.append(dataset[i + look_back:(i+look_back+3), 0])
     return np.array(X), np.array(Y)
 
+def get_plt(predict_df, historical_df, timeRange):
+    img = io.BytesIO()
+    plt.style.use('seaborn-dark')
+    plt.figure(figsize=(16,8))
+    plt.xlabel('Date', fontsize=18)
+    plt.ylabel('Close Price USD ($)', fontsize=18)
+    plt.plot(historical_df[-timeRange:], label="History", marker=".")
+    plt.plot(predict_df, label="Predict", marker=".")
+    plt.annotate("{:.2f}".format(predict_df[0][0]), (predict_df.index[0],predict_df[0][0]), ha='right')
+    plt.annotate("{:.2f}".format(predict_df[0][1]), (predict_df.index[1],predict_df[0][1]), ha='center')
+    plt.annotate("{:.2f}".format(predict_df[0][2]), (predict_df.index[2],predict_df[0][2]), ha='left')
+    plt.legend(['History', 'Predictions'], loc='lower right')
+    plt.tight_layout()
+    sns.despine(top=True)
+    plt.grid()
+    plt.savefig(img, format='png')
+    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+    return plot_url
+
 def stock_predict(SYMBOL, COMPANY):
-    n_of_pages = 5
-    look_back = 4
+    n_of_pages = 10
+    look_back = 7
 
     # COMPANY = "FACEBOOK"
     # SYMBOL = "FB"
@@ -131,7 +153,7 @@ def stock_predict(SYMBOL, COMPANY):
 
     df["sentimental_analysis_score"] = df["internals_text"].apply(sentimental_analysis)
 
-    sentiment_df = df[['internals_dates', 'sentimental_analysis_score']].groupby('internals_dates').mean().reset_index()
+    sentiment_df = df[['internals_dates', 'sentimental_analysis_score', 'internal_urls']].groupby('internals_dates').mean().reset_index()
     sentiment_df["time"] = pd.to_datetime(sentiment_df["internals_dates"])
     sentiment_df = sentiment_df.sort_values("time").reset_index(drop=True)
 
@@ -173,48 +195,50 @@ def stock_predict(SYMBOL, COMPANY):
     X_train_all_features = np.append(X_train_features_1,X_train_features_2,axis=1)
 
     model = Sequential()
-    model.add(LSTM(32, activation='relu', input_shape=(X_train_all_features.shape[1], X_train_all_features.shape[2])))
-    model.add(RepeatVector(3))
+    model.add(LSTM(128, activation='relu', input_shape=(X_train_all_features.shape[1], X_train_all_features.shape[2])))
+    model.add(RepeatVector(30))
+    model.add(LSTM(16, activation='relu', return_sequences=(True)))
     model.add(TimeDistributed(Dense(3)))
     model.compile(loss='mean_squared_error', optimizer='adam')
 
-    history = model.fit(X_train_all_features,y_train, epochs=10, batch_size=1, 
-                        callbacks=[EarlyStopping(monitor='loss', patience=10)], verbose=0, shuffle=False)
+    history = model.fit(X_train_all_features,y_train, epochs=50, batch_size=1, #validation_data=(X_test_all_features, y_test),
+                        callbacks=[EarlyStopping(monitor='loss', patience=10)], verbose=0, shuffle=True)
 
-    p = np.array([[[i[0] for i in y[-4:]], [i[0] for i in X[-4:]]]])
+    p = np.array([[[i[0] for i in y[-look_back:]], [i[0] for i in X[-look_back:]]]])
     test_predict = model.predict(p)
     test_predict  = scaler.inverse_transform(np.array([x[0] for x in test_predict]))[0] 
 
-    img = io.BytesIO()
+    # img = io.BytesIO()
 
-    plt.style.use('seaborn-dark')
-    plt.figure(figsize=(16,8))
-    plt.xlabel('Date', fontsize=18)
-    plt.ylabel('Close Price USD ($)', fontsize=18)
+    # plt.style.use('seaborn-dark')
+    # plt.figure(figsize=(16,8))
+    # plt.xlabel('Date', fontsize=18)
+    # plt.ylabel('Close Price USD ($)', fontsize=18)
 
-    plt_predict = pd.DataFrame(data=test_predict, index=[result.index[-1] + timedelta(days=1), result.index[-1] + timedelta(days=2), result.index[-1] + timedelta(days=3)])
-    plt_historical = pd.DataFrame(data=result['Close'], index=result.index)
-    plt.plot(plt_historical[-30:], label="History", marker=".")
-    plt.plot(plt_predict, label="Predict", marker=".")
-    plt.annotate("{:.2f}".format(plt_predict[0][0]), (plt_predict.index[0],plt_predict[0][0]), ha='right')
-    plt.annotate("{:.2f}".format(plt_predict[0][1]), (plt_predict.index[1],plt_predict[0][1]), ha='center')
-    plt.annotate("{:.2f}".format(plt_predict[0][2]), (plt_predict.index[2],plt_predict[0][2]), ha='left')
-    plt.legend(['History', 'Predictions'], loc='lower right')
-    plt.title("LSTM fit of Stock Market Prices Including Sentiment Signal",size = 20)
-    plt.tight_layout()
-    sns.despine(top=True)
-    plt.grid()
+    test_predict_time = [result.index[-1] + timedelta(days=1), result.index[-1] + timedelta(days=2), result.index[-1] + timedelta(days=3)]
+    plt_predict = pd.DataFrame(data=test_predict, index=test_predict_time)
+    plt_historical = pd.DataFrame(data=list(result['Close'].values) + list(test_predict), index=list(result.index.values) + test_predict_time)
+    # plt.plot(plt_historical[-30:], label="History", marker=".")
+    # plt.plot(plt_predict, label="Predict", marker=".")
+    # plt.annotate("{:.2f}".format(plt_predict[0][0]), (plt_predict.index[0],plt_predict[0][0]), ha='right')
+    # plt.annotate("{:.2f}".format(plt_predict[0][1]), (plt_predict.index[1],plt_predict[0][1]), ha='center')
+    # plt.annotate("{:.2f}".format(plt_predict[0][2]), (plt_predict.index[2],plt_predict[0][2]), ha='left')
+    # plt.legend(['History', 'Predictions'], loc='lower right')
+    # # plt.title("LSTM fit of Stock Market Prices Including Sentiment Signal",size = 20)
+    # plt.tight_layout()
+    # sns.despine(top=True)
+    # plt.grid()
 
-    plt.savefig(img, format='png')
-    plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
+    # plt.savefig(img, format='png')
+    # plot_url = base64.b64encode(img.getbuffer()).decode("ascii")
 
     news_return = []
-    a = df[["internals_text", "sentimental_analysis_score"]].drop_duplicates()
+    a = df[["internals_text", "sentimental_analysis_score", "internal_urls"]].drop_duplicates()
     for idx, row in a[-10:].iterrows():
-        line = {"text": row["internals_text"], "date": datetime.date(idx), "score": row["sentimental_analysis_score"]}
+        line = {"text": row["internals_text"], "date": datetime.date(idx), "score": row["sentimental_analysis_score"], "link": row["internal_urls"]}
         news_return.insert(0, line)
 
-    return plot_url, news_return, list(test_predict)
+    return plt_predict, plt_historical, news_return, list(test_predict)
 
 
 def stock_predict_plt(key):
