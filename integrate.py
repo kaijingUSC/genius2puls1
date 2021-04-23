@@ -51,19 +51,23 @@ def get_info(ur):
     # news_df = pd.DataFrame()
     info = BeautifulSoup(requests.get(ur, allow_redirects=True).content, 'html.parser').find_all("div", {
         "class": "article-card__details"})
-    links = ["https://financialpost.com/"+a['href'] for each_link in info for a in each_link.find_all('a', {"class":"article-card__link"},href=True)]
-    text = [p.contents[0].strip() for each_link in info for p in each_link.find_all('p', {"class":"article-card__excerpt"})]
-    date = [span.contents[0].strip() for each_link in info for span in each_link.find_all('span', {"class":"article-card__time"})]
-    new_date = []
+    try:
+        links = ["https://financialpost.com/"+a['href'] for each_link in info for a in each_link.find_all('a', {"class":"article-card__link"},href=True)]
+        text = [p.contents[0].strip() for each_link in info for p in each_link.find_all('p', {"class":"article-card__excerpt"})]
+        date = [span.contents[0].strip() for each_link in info for span in each_link.find_all('span', {"class":"article-card__time"})]
 
-    for each in date:
-        if 'ago' in each:
-            if 'hour' in each:
-                true_date = datetime.now() - timedelta(hours=int(each[0]))
-            else:
-                true_date = datetime.now() - timedelta(days=int(each[0]))
-            each = true_date.strftime("%B %d, %Y")
-        new_date.append(each)
+        for each in date:
+            if 'ago' in each:
+                if 'hour' in each:
+                    true_date = datetime.now() - timedelta(hours=int(each[0]))
+                else:
+                    true_date = datetime.now() - timedelta(days=int(each[0]))
+                each = true_date.strftime("%B %d, %Y")
+            new_date.append(each)
+    except:
+        links=[]
+        text=[]
+        new_date=[]
     
     return [text, new_date, links]
 
