@@ -1,4 +1,3 @@
-
 import requests
 import urllib
 import sys
@@ -42,7 +41,7 @@ def extract_link_of_news(k_word, n_of_page):
     news_df["internal_urls"] = info[2]
     news_df["principal_url"] = link
     news_df["n_of_page"] = n_of_page
-    
+
     return news_df
 
 
@@ -51,24 +50,20 @@ def get_info(ur):
     # news_df = pd.DataFrame()
     info = BeautifulSoup(requests.get(ur, allow_redirects=True).content, 'html.parser').find_all("div", {
         "class": "article-card__details"})
-    try:
-        links = ["https://financialpost.com/"+a['href'] for each_link in info for a in each_link.find_all('a', {"class":"article-card__link"},href=True)]
-        text = [p.contents[0].strip() for each_link in info for p in each_link.find_all('p', {"class":"article-card__excerpt"})]
-        date = [span.contents[0].strip() for each_link in info for span in each_link.find_all('span', {"class":"article-card__time"})]
+    links = ["https://financialpost.com/"+a['href'] for each_link in info for a in each_link.find_all('a', {"class":"article-card__link"},href=True)]
+    text = [p.contents[0].strip() for each_link in info for p in each_link.find_all('p', {"class":"article-card__excerpt"})]
+    date = [span.contents[0].strip() for each_link in info for span in each_link.find_all('span', {"class":"article-card__time"})]
+    new_date = []
 
-        for each in date:
-            if 'ago' in each:
-                if 'hour' in each:
-                    true_date = datetime.now() - timedelta(hours=int(each[0]))
-                else:
-                    true_date = datetime.now() - timedelta(days=int(each[0]))
-                each = true_date.strftime("%B %d, %Y")
-            new_date.append(each)
-    except:
-        links=[]
-        text=[]
-        new_date=[]
-    
+    for each in date:
+        if 'ago' in each:
+            if 'hour' in each:
+                true_date = datetime.now() - timedelta(hours=int(each[0]))
+            else:
+                true_date = datetime.now() - timedelta(days=int(each[0]))
+            each = true_date.strftime("%B %d, %Y")
+        new_date.append(each)
+
     return [text, new_date, links]
 
 
@@ -82,15 +77,14 @@ def sentimental_analysis(y):
 
 
 n_of_pages = 20
-COMPANY = "apple"
-SYMBOL = "aapl"
+COMPANY = "facebook"
+SYMBOL = "fb"
 df = pd.concat([extract_link_of_news(COMPANY,i) for i in range(1,n_of_pages+1)],ignore_index = True)
 
 
 analyser = SentimentIntensityAnalyzer()
 
 text = df['internals_text']
-df["text_split"] = df["internals_text"].apply(split_by_dot)
 df["time"] = pd.to_datetime(df["internals_dates"])
 df = df.sort_values("time")
 df = df.set_index("time")
@@ -100,10 +94,6 @@ df["sentimental_analysis_score"] = df["internals_text"].apply(sentimental_analys
 print(df.head())
 
 
-
-
-
-#%%
 
 sentiment_df = df[['internals_dates', 'sentimental_analysis_score']].groupby('internals_dates').mean().reset_index()
 sentiment_df["time"] = pd.to_datetime(sentiment_df["internals_dates"])
@@ -203,7 +193,6 @@ X_train_all_features = np.append(X_train_features_1, X_train_features_2,axis=1)
 X_test_all_features = np.append(X_test_features_1, X_test_features_2,axis=1)
 # X_test_all_features = np.append(X_test_features_1r, X_test_all_features,axis=1)
 
-#%%
 
 import time 
 
