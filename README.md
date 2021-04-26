@@ -1,4 +1,4 @@
-# genius2puls1
+# genius2puls1 STOCK PREDICTION
 
 ## Final Prodcut is in directory 'Flask_app'
 
