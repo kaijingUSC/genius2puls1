@@ -1,5 +1,9 @@
 # genius2puls1
 
+## Final Prodcut is in directory 'Flask_app'
+
+## Detailed implementation information
+
 Close price from 2020-4-18 to 2021-4-15
 
 1. Basic analysis and visualization
@@ -11,13 +15,16 @@ Close price from 2020-4-18 to 2021-4-15
   - Income distribution scatter chart
   - Correlation heat map
   - Fast scatter plot of stock risk and return
+
 2. Model selection
 
     kaggle_test1.py
 
-  - LSTM
+  - LSTM (vanila + encoder+decoder)
   - SVM
-    Evaluation: RSME
+  - Arima
+    Evaluation: RSME; MAPE; 
+    
 3. News text crawler
 
     news_crawler.py
