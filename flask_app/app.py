@@ -50,10 +50,12 @@ def index():
         
         elif request.form['range'] :
             print(request.form['range'])
-            if request.form['range'] == "Three Months":
-                timeRange = 30
+            if request.form['range'] == "One Month":
+                timeRange = 22
+            elif request.form['range'] == "Three Months":
+                timeRange = 80
             elif request.form['range'] == "Half Year":
-                timeRange = 180
+                timeRange = 150
             elif request.form['range'] == "One Year":
                 timeRange = len(historical_df)
     # print(predict_df)
@@ -67,25 +69,25 @@ def other_analysis():
     img_url=''
     if request.method == "POST":
         if request.form['link'] == 'Moving Average':
-            if not key:
+            if not symbol:
                 flash('Choose one')
                 return redirect(url_for('other_analysis'))
-            img_url = moving_average(key)
+            img_url = moving_average(symbol)
         elif request.form['link'] == 'Rate of Return':
-            if not key:
+            if not symbol:
                 flash('Choose one')
                 return redirect(url_for('other_analysis'))
-            img_url = Rate_of_Return(key)
+            img_url = Rate_of_Return(symbol)
         elif request.form['link'] == 'Correlation':
-            if not key:
+            if not symbol:
                 flash('Choose one')
                 return redirect(url_for('other_analysis'))
-            img_url = Correlation(key)
+            img_url = Correlation(symbol)
         elif request.form['link'] == 'Risk and Return':
-            if not key:
+            if not symbol:
                 flash('Choose one')
                 return redirect(url_for('other_analysis'))
-            img_url = Risk_and_Return(key)
+            img_url = Risk_and_Return(symbol)
     return render_template('other_analysis.html', img_url=img_url)
 
 @app.route('/contact_us', methods=['GET', 'POST'])

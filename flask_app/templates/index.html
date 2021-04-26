@@ -23,6 +23,14 @@
             background-color: #4374e0;
             color:white;
         }
+        .center{
+            margin: auto;
+            width: 50%;
+            padding: 10px;        
+        }
+        .text_center{
+            text-align: center;
+        }
         {#img{#}
         {##}
         {#    margin-left: 40%;#}
@@ -36,46 +44,49 @@
     </head>
 <body>
 <div class="container">
-    <div class="page-header">
+    <div class="page-header ">
         <h1>Stock Prediction</h1>
     </div>
-    <div>
-        <form method="post">
-            <label class = "input_area" for="symbol">Enter symbol/name here:</label><br>
-            <input type="text" name="symbol" id="symbol"><br><br>
-            <input class="submit" type="submit" name="submit" value="Search">
+    <div >
+        <form method="post" >
+            <label class = "input_area " for="symbol">Enter symbol/name here:</label><br>
+            <input  type="text" name="symbol" id="symbol"><br><br>
+            <input class="submit " type="submit" name="submit" value="Search">
         </form>
     </div>
-    <br>
-    {% if company != '' %}
-        <h1>{{company}} - {{symbol}}</h1>
-    {% endif %}
+    <div >
+        {% if company != '' %}
+            <h2 >{{company}} - {{symbol}}</h1>
+        {% endif %}
 
-    {% if prediction|length > 0%}
-        {% for each in prediction %}
-            <div>
-                <span>Next {{loop.index}} day prediction: {{each}} </span>
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    {% if img_url %}
-        <form method="post">
-            <input type="submit" name="range" value="Three Months">
-            <input type="submit" name="range" value="Half Year">
-            <input type="submit" name="range" value="One Year">
-        </form>
-        <img style="width: 75%;" src="data:image/png;base64, {{img_url}}"/>
-    {% endif%}
-
-    {% if news|length > 0%}
-        <div>
-            <p>Found news: </p>
-            {% for each in news%}
-                <li>{{ each.date }} - <a href="{{each.link}}">{{ each.text }}</a></li>
+        {% if prediction|length > 0%}
+            {% for each in prediction %}
+                <div class="text_center">
+                    <span >Next {{loop.index}} day prediction: {{each}} </span>
+                </div>
             {% endfor %}
-        </div>
-    {% endif %}
+        {% endif %}
+<br/>
+        {% if img_url %}
+            <form method="post" class="text_center">
+                <input type="submit" name="range" value="One Month">
+                <input type="submit" name="range" value="Three Months">
+                <input type="submit" name="range" value="Half Year">
+                <input type="submit" name="range" value="One Year">
+            </form>
+            <img style="width: 100%;" src="data:image/png;base64, {{img_url}}"/>
+        {% endif%}
+
+        {% if news|length > 0%}
+            <div >
+                <h3 class="text_center">Found news: </h3>
+                {% for each in news%}
+                    <li>{{ each.date }} - <a href="{{each.link}}">{{ each.text }}</a></li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
 
 </div>
 {#<img class = "img"> #}
