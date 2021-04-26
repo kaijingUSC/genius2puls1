@@ -1,6 +1,6 @@
 # genius2puls1
 
-Close price from 2020-7-20 to 2021-1-6
+Close price from 2020-4-18 to 2021-4-15
 
 1. Basic analysis and visualization
 
